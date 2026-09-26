@@ -167,6 +167,14 @@ export interface VoicePhrases {
   rerouteConfirmed: () => string;
   heavyTraffic: (min: number) => string;
   floodingAhead: () => string;
+  takeTransit: (mode: string, route: string) => string;
+  walkToStop: (dist: string, stop: string) => string;
+  transitArriving: (route: string, min: number) => string;
+  transitTransfer: (route: string, station: string) => string;
+  tightTransfer: (min: number) => string;
+  tripBudgetStatus: (cost: number, budget: number) => string;
+  nextDeliveryStop: (customer: string) => string;
+  deliveryArrived: () => string;
 }
 
 const PHRASES: Record<NormalizedVoiceLanguage, VoicePhrases> = {
@@ -185,6 +193,14 @@ const PHRASES: Record<NormalizedVoiceLanguage, VoicePhrases> = {
     rerouteConfirmed: () => 'New route confirmed. Continue ahead.',
     heavyTraffic: (min) => `Heavy traffic ahead. Expect approximately ${min} minutes delay.`,
     floodingAhead: () => 'Flooding reported ahead. Please exercise caution.',
+    takeTransit: (mode, route) => `Take ${mode} ${route}.`,
+    walkToStop: (dist, stop) => `Walk ${dist} to ${stop}.`,
+    transitArriving: (route, min) => `Your ${route} arrives in ${min} minutes.`,
+    transitTransfer: (route, station) => `Transfer to ${route} at ${station}.`,
+    tightTransfer: (min) => `Caution: tight transfer window of ${min} minutes.`,
+    tripBudgetStatus: (cost, budget) => `Estimated cost is ${cost} rupees, within your ${budget} rupees budget.`,
+    nextDeliveryStop: (customer) => `Proceed to next delivery stop: ${customer}.`,
+    deliveryArrived: () => 'Arrived at delivery destination.',
   },
   te: {
     startRoute: (dest, firstInst) => `${dest} కు నావిగేషన్ ప్రారంభమవుతోంది. ${firstInst ? firstInst + '.' : 'ముందుకు సాగండి.'}`,
@@ -201,6 +217,14 @@ const PHRASES: Record<NormalizedVoiceLanguage, VoicePhrases> = {
     rerouteConfirmed: () => 'కొత్త మార్గం ఖరారైంది. ముందుకు సాగండి.',
     heavyTraffic: (min) => `ముందు భారీ ట్రాఫిక్ ఉంది. సుమారు ${min} నిమిషాల ఆలస్యం కావచ్చు.`,
     floodingAhead: () => 'ముందు నీటి నిల్వ నివేదించబడింది. జాగ్రత్తగా నడపండి.',
+    takeTransit: (mode, route) => `${route} ${mode} ఎక్కండి.`,
+    walkToStop: (dist, stop) => `${stop} కు ${dist} నడవండి.`,
+    transitArriving: (route, min) => `మీ ${route} ${min} నిమిషాల్లో వస్తుంది.`,
+    transitTransfer: (route, station) => `${station} వద్ద ${route} కు మారండి.`,
+    tightTransfer: (min) => `జాగ్రత్త: బదిలీకి కేవలం ${min} నిమిషాల సమయం మాత్రమే ఉంది.`,
+    tripBudgetStatus: (cost, budget) => `అంచనా వ్యయం ${cost} రూపాయలు, మీ బడ్జెట్ పరిధిలోనే ఉంది.`,
+    nextDeliveryStop: (customer) => `తదుపరి డెలివరీ స్టాప్: ${customer} కు వెళ్లండి.`,
+    deliveryArrived: () => 'డెలివరీ గమ్యస్థానానికి చేరుకున్నారు.',
   },
   hi: {
     startRoute: (dest, firstInst) => `${dest} के लिए नेविगेशन शुरू हो रहा है. ${firstInst ? firstInst + '.' : 'आगे बढ़ें.'}`,
@@ -217,6 +241,14 @@ const PHRASES: Record<NormalizedVoiceLanguage, VoicePhrases> = {
     rerouteConfirmed: () => 'नया मार्ग तैयार है. आगे बढ़ें.',
     heavyTraffic: (min) => `आगे भारी ट्रैफिक है. लगभग ${min} मिनट की देरी हो सकती है.`,
     floodingAhead: () => 'आगे जलभराव की सूचना है. कृपया सावधानी से चलें.',
+    takeTransit: (mode, route) => `${route} ${mode} लें.`,
+    walkToStop: (dist, stop) => `${stop} तक ${dist} पैदल चलें.`,
+    transitArriving: (route, min) => `आपकी ${route} ${min} मिनट में आ रही है.`,
+    transitTransfer: (route, station) => `${station} पर ${route} के लिए बदलें.`,
+    tightTransfer: (min) => `चेतावनी: ट्रांसफर के लिए केवल ${min} मिनट हैं.`,
+    tripBudgetStatus: (cost, budget) => `अनुमानित लागत ${cost} रुपये है, आपके बजट के भीतर.`,
+    nextDeliveryStop: (customer) => `अगले डिलीवरी स्टॉप पर आगे बढ़ें: ${customer}.`,
+    deliveryArrived: () => 'डिलीवरी स्थान पर पहुंच गए हैं.',
   },
   ta: {
     startRoute: (dest, firstInst) => `${dest} க்கான வழிசெலுத்தல் தொடங்குகிறது. ${firstInst ? firstInst + '.' : 'முன்னேறவும்.'}`,
@@ -233,6 +265,14 @@ const PHRASES: Record<NormalizedVoiceLanguage, VoicePhrases> = {
     rerouteConfirmed: () => 'புதிய பாதை உறுதிசெய்யப்பட்டது. தொடரவும்.',
     heavyTraffic: (min) => `முன்னால் போக்குவரத்து நெரிசல். ${min} நிமிடங்கள் தாமதம் ஏற்படலாம்.`,
     floodingAhead: () => 'முன்னால் வெள்ளப்பெருக்கு எச்சரிக்கை. கவனமாக செல்லவும்.',
+    takeTransit: (mode, route) => `${route} ${mode} செல்லவும்.`,
+    walkToStop: (dist, stop) => `${stop} க்கு ${dist} நடக்கவும்.`,
+    transitArriving: (route, min) => `${route} ${min} நிமிடங்களில் வரும்.`,
+    transitTransfer: (route, station) => `${station} இல் ${route} க்கு மாறவும்.`,
+    tightTransfer: (min) => `எச்சரிக்கை: மாற்று நேரம் ${min} நிமிடங்கள் மட்டுமே.`,
+    tripBudgetStatus: (cost, budget) => `மதிப்பிடப்பட்ட செலவு ${cost} ரூபாய்.`,
+    nextDeliveryStop: (customer) => `அடுத்த டெலிவரி: ${customer}.`,
+    deliveryArrived: () => 'டெலிவரி இடத்தை அடைந்துவிட்டீர்கள்.',
   },
   kn: {
     startRoute: (dest, firstInst) => `${dest} ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ. ${firstInst ? firstInst + '.' : 'ಮುಂದುವರಿಯಿರಿ.'}`,
@@ -249,6 +289,14 @@ const PHRASES: Record<NormalizedVoiceLanguage, VoicePhrases> = {
     rerouteConfirmed: () => 'ಹೊಸ ಮಾರ್ಗ ಸಿದ್ಧವಾಗಿದೆ. ಮುಂದುವರಿಯಿರಿ.',
     heavyTraffic: (min) => `ಮುಂದೆ ಭಾರಿ ಟ್ರಾಫಿಕ್ ಇದೆ. ಸುಮಾರು ${min} ನಿಮಿಷ ವಿಳಂಬವಾಗಬಹುದು.`,
     floodingAhead: () => 'ಮುಂದೆ ನೀರು ನಿಂತಿದೆ. ಎಚ್ಚರಿಕೆಯಿಂದ ಚಲಿಸಿ.',
+    takeTransit: (mode, route) => `${route} ${mode} ಹತ್ತಿ.`,
+    walkToStop: (dist, stop) => `${stop} ಗೆ ${dist} ನಡೆಯಿರಿ.`,
+    transitArriving: (route, min) => `${route} ${min} ನಿಮಿಷದಲ್ಲಿ ತಲುಪಲಿದೆ.`,
+    transitTransfer: (route, station) => `${station} ನಲ್ಲಿ ${route} ಗೆ ಬದಲಾಯಿಸಿ.`,
+    tightTransfer: (min) => `ಎಚ್ಚರಿಕೆ: ಬದಲಾವಣೆಗೆ ಕೇವಲ ${min} ನಿಮಿಷ ಮಾತ್ರ ಇದೆ.`,
+    tripBudgetStatus: (cost, budget) => `ಅಂದಾಜು ವೆಚ್ಚ ${cost} ರೂಪಾಯಿಗಳು.`,
+    nextDeliveryStop: (customer) => `ಮುಂದಿನ ಡೆಲಿವರಿ ನಿಲ್ದಾಣ: ${customer}.`,
+    deliveryArrived: () => 'ಡೆಲಿವರಿ ಸ್ಥಳ ತಲುಪಿದ್ದೀರಿ.',
   },
 };
 
@@ -799,6 +847,46 @@ export class NavigationVoiceService {
     if (this.state === 'IDLE' || delayMinutes < 4) return;
     const phrases = PHRASES[this.language] || PHRASES.en;
     this.speak(phrases.heavyTraffic(Math.round(delayMinutes)), VoicePriority.P5_TRAFFIC, 'traffic_delay');
+  }
+
+  public announceTakeTransit(mode: string, route: string) {
+    const phrases = PHRASES[this.language] || PHRASES.en;
+    this.speak(phrases.takeTransit(mode, route), VoicePriority.P4_MANEUVER, 'take_transit', true);
+  }
+
+  public announceWalkToStop(dist: string, stop: string) {
+    const phrases = PHRASES[this.language] || PHRASES.en;
+    this.speak(phrases.walkToStop(dist, stop), VoicePriority.P4_MANEUVER, 'walk_to_stop');
+  }
+
+  public announceTransitArriving(route: string, min: number) {
+    const phrases = PHRASES[this.language] || PHRASES.en;
+    this.speak(phrases.transitArriving(route, min), VoicePriority.P4_MANEUVER, 'transit_arriving');
+  }
+
+  public announceTransitTransfer(route: string, station: string) {
+    const phrases = PHRASES[this.language] || PHRASES.en;
+    this.speak(phrases.transitTransfer(route, station), VoicePriority.P4_MANEUVER, 'transit_transfer', true);
+  }
+
+  public announceTightTransfer(min: number) {
+    const phrases = PHRASES[this.language] || PHRASES.en;
+    this.speak(phrases.tightTransfer(min), VoicePriority.P1_SAFETY_HAZARD, 'tight_transfer', true);
+  }
+
+  public announceTripBudgetStatus(cost: number, budget: number) {
+    const phrases = PHRASES[this.language] || PHRASES.en;
+    this.speak(phrases.tripBudgetStatus(cost, budget), VoicePriority.P7_INFO, 'budget_status');
+  }
+
+  public announceNextDeliveryStop(customer: string) {
+    const phrases = PHRASES[this.language] || PHRASES.en;
+    this.speak(phrases.nextDeliveryStop(customer), VoicePriority.P4_MANEUVER, 'next_delivery', true);
+  }
+
+  public announceDeliveryArrived() {
+    const phrases = PHRASES[this.language] || PHRASES.en;
+    this.speak(phrases.deliveryArrived(), VoicePriority.P4_MANEUVER, 'delivery_arrived', true);
   }
 
   // Development & Manual Audible Test API (Mandated by P0 Spec Sections 15 & 16)

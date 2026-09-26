@@ -2,7 +2,8 @@
 // ROADRISK AI — SINGLE UNIFIED SYSTEM ORCHESTRATOR
 // Master coordination engine connecting Search, Routing, Traffic, Risk,
 // Incidents, Weather, Flood, GPS, Navigation, Voice, Emergency, Events & ETA.
-// Prevents duplicate routing decisions and guarantees single source of truth.
+// Guarantees SINGLE SOURCE OF TRUTH across Cost Intelligence, AI Trip Planner,
+// Public Transport (GTFS), and Fleet Logistics Optimization.
 // ==============================================================================
 
 import { eventBus } from './eventBus.ts';
@@ -17,7 +18,26 @@ import { weatherService } from './weatherService.ts';
 import { floodService } from './floodService.ts';
 import { etaService } from './etaService.ts';
 import { mobilityIntelligenceService, type TripCostBreakdown } from './mobilityIntelligenceService.ts';
-import type { Route, TransportMode, RouteObjective, Incident, WeatherCondition, FloodRiskLevel, GpsSignalState } from '../types/index.ts';
+import { aiTripPlannerService } from './aiTripPlannerService.ts';
+import { logisticsService } from './logisticsService.ts';
+import type {
+  Route,
+  TransportMode,
+  RouteObjective,
+  Incident,
+  WeatherCondition,
+  FloodRiskLevel,
+  GpsSignalState,
+  RoadRiskTripState,
+  TripLocation,
+  JourneyCost,
+  TransitPlan,
+  LogisticsPlan,
+  Itinerary,
+  TripPlanRequest,
+  DeliveryStop,
+  FleetVehicle,
+} from '../types/index.ts';
 
 export type NavigationStatus = 'IDLE' | 'ROUTING' | 'NAVIGATING' | 'ARRIVED';
 
@@ -35,29 +55,46 @@ export interface OrchestratorState {
   activeWeather: WeatherCondition | null;
   activeFloodRisk: FloodRiskLevel | null;
   lastRerouteTimestamp: number;
+  tripState: RoadRiskTripState;
 }
 
 class RoadRiskOrchestrator {
-  private state: OrchestratorState = {
-    navigationStatus: 'IDLE',
-    currentGpsState: 'AVAILABLE',
-    activeTransportMode: 'CAR',
-    activeObjective: 'FASTEST',
-    originCoordinates: null,
-    destinationCoordinates: null,
-    destinationName: '',
-    calculatedRoutes: [],
-    selectedRoute: null,
-    activeIncidents: [],
-    activeWeather: null,
-    activeFloodRisk: null,
-    lastRerouteTimestamp: 0,
-  };
-
+  private state: OrchestratorState;
   private listeners: Set<(state: OrchestratorState) => void> = new Set();
   private initialized: boolean = false;
 
   constructor() {
+    const defaultOrigin: TripLocation = {
+      id: 'origin_vja_center',
+      name: 'Vijayawada Central Hub',
+      coordinates: [80.6480, 16.5062],
+    };
+
+    const initialTripState: RoadRiskTripState = {
+      origin: defaultOrigin,
+      destinations: [],
+      waypoints: [],
+      transportMode: 'CAR',
+      status: 'planning',
+    };
+
+    this.state = {
+      navigationStatus: 'IDLE',
+      currentGpsState: 'AVAILABLE',
+      activeTransportMode: 'CAR',
+      activeObjective: 'FASTEST',
+      originCoordinates: [80.6480, 16.5062],
+      destinationCoordinates: null,
+      destinationName: '',
+      calculatedRoutes: [],
+      selectedRoute: null,
+      activeIncidents: [],
+      activeWeather: null,
+      activeFloodRisk: null,
+      lastRerouteTimestamp: 0,
+      tripState: initialTripState,
+    };
+
     this.bindInternalEvents();
   }
 
@@ -70,11 +107,29 @@ class RoadRiskOrchestrator {
     if (currentLoc) {
       this.state.originCoordinates = currentLoc.coordinates;
       this.state.currentGpsState = currentLoc.state;
+      this.state.tripState.origin = {
+        id: 'gps_origin',
+        name: 'Current GPS Location',
+        coordinates: currentLoc.coordinates,
+      };
     }
   }
 
   public getState(): OrchestratorState {
     return { ...this.state };
+  }
+
+  public getTripState(): RoadRiskTripState {
+    return { ...this.state.tripState };
+  }
+
+  public updateTripState(updates: Partial<RoadRiskTripState>): RoadRiskTripState {
+    this.state.tripState = {
+      ...this.state.tripState,
+      ...updates,
+    };
+    this.notify();
+    return { ...this.state.tripState };
   }
 
   public subscribe(listener: (state: OrchestratorState) => void): () => void {
@@ -121,6 +176,22 @@ class RoadRiskOrchestrator {
     this.state.activeTransportMode = mode;
     this.state.activeObjective = objective;
     this.state.destinationName = destinationName;
+
+    // Update canonical trip state
+    this.state.tripState.origin = {
+      id: 'trip_origin',
+      name: 'Origin',
+      coordinates: origin,
+    };
+    this.state.tripState.destinations = [
+      {
+        id: 'trip_destination',
+        name: destinationName,
+        coordinates: destination,
+      },
+    ];
+    this.state.tripState.transportMode = mode;
+    this.state.tripState.status = 'planning';
     this.notify();
 
     try {
@@ -148,7 +219,30 @@ class RoadRiskOrchestrator {
       });
       const corridors = routingRes.routes;
       this.state.calculatedRoutes = corridors;
-      this.state.selectedRoute = corridors[0] || null;
+      const topRoute = corridors[0] || null;
+      this.state.selectedRoute = topRoute;
+
+      // 3. Compute Canonical Journey Cost for selected corridor
+      if (topRoute) {
+        const costRes = mobilityIntelligenceService.calculateJourneyCost(
+          topRoute.distanceKm,
+          mode,
+          {
+            routeSummary: topRoute.summary,
+            hasTolls: (topRoute.summary || '').toLowerCase().includes('toll'),
+          }
+        );
+        this.state.tripState.cost = costRes;
+        this.state.tripState.route = topRoute;
+        this.state.tripState.alternatives = corridors.slice(1);
+        this.state.tripState.status = 'ready';
+        this.state.tripState.risk = {
+          score: topRoute.riskScore,
+          level: topRoute.riskLevel,
+          hazardsCount: topRoute.hazardCount || 0,
+          summary: topRoute.recommendationReason || `${topRoute.riskLevel} risk corridor.`,
+        };
+      }
 
       eventBus.publish('ROUTE_CHANGED', { routes: corridors, selectedRoute: this.state.selectedRoute }, {
         source: 'RoadRiskOrchestrator',
@@ -170,7 +264,70 @@ class RoadRiskOrchestrator {
   }
 
   // --------------------------------------------------------------------------
-  // 3. NAVIGATION LIFECYCLE MANAGEMENT
+  // 3. AI TRIP PLANNER INTEGRATION (SECTION 10 - 17)
+  // --------------------------------------------------------------------------
+  public async planAiTrip(prompt: string, origin?: [number, number]): Promise<Itinerary> {
+    const originCoords = origin || this.state.originCoordinates || [80.6480, 16.5062];
+    const parsedRequest = aiTripPlannerService.parseNaturalLanguagePrompt(prompt, originCoords);
+    const itinerary = await aiTripPlannerService.generateItinerary(parsedRequest);
+
+    // Synchronize canonical trip state
+    this.state.tripState.itinerary = itinerary;
+    this.state.tripState.destinations = parsedRequest.destinations;
+    this.state.tripState.budget = parsedRequest.budget;
+    this.state.tripState.transportMode = (parsedRequest.transportPreference && parsedRequest.transportPreference[0]) || 'CAR';
+    this.state.tripState.status = 'ready';
+
+    if (itinerary.allStops.length > 0) {
+      const firstStop = itinerary.allStops[0];
+      this.state.destinationName = firstStop.location.name;
+      this.state.destinationCoordinates = firstStop.location.coordinates;
+    }
+
+    this.notify();
+    return itinerary;
+  }
+
+  // --------------------------------------------------------------------------
+  // 4. PUBLIC TRANSPORT INTELLIGENCE INTEGRATION (SECTION 18 - 24)
+  // --------------------------------------------------------------------------
+  public async planPublicTransit(
+    origin?: [number, number],
+    destination?: [number, number]
+  ): Promise<TransitPlan> {
+    const orig = origin || this.state.originCoordinates || [80.6200, 16.5185];
+    const dest = destination || this.state.destinationCoordinates || [80.7950, 16.5280];
+
+    const transitPlan = await transitService.planPublicTransportRoute(orig, dest);
+    this.state.tripState.transit = transitPlan;
+    this.state.tripState.transportMode = 'TRANSIT';
+
+    // Update canonical cost from transit plan
+    const transitCost = mobilityIntelligenceService.calculateJourneyCost(
+      transitPlan.totalWalkingDistanceMeters / 1000 + 15,
+      'TRANSIT'
+    );
+    this.state.tripState.cost = transitCost;
+    this.notify();
+    return transitPlan;
+  }
+
+  // --------------------------------------------------------------------------
+  // 5. LOGISTICS & DELIVERY INTELLIGENCE INTEGRATION (SECTION 25 - 34)
+  // --------------------------------------------------------------------------
+  public planLogisticsDeliveries(
+    stops?: DeliveryStop[],
+    vehicle?: FleetVehicle
+  ): LogisticsPlan {
+    const plan = logisticsService.createLogisticsPlan(stops, vehicle);
+    this.state.tripState.logistics = plan;
+    this.state.tripState.status = 'ready';
+    this.notify();
+    return plan;
+  }
+
+  // --------------------------------------------------------------------------
+  // 6. NAVIGATION LIFECYCLE MANAGEMENT
   // --------------------------------------------------------------------------
   public startNavigation(routeId?: string): boolean {
     const targetRoute = (routeId && this.state.calculatedRoutes.find((r) => r.id === routeId)) || this.state.selectedRoute;
@@ -178,6 +335,7 @@ class RoadRiskOrchestrator {
 
     this.state.selectedRoute = targetRoute;
     this.state.navigationStatus = 'NAVIGATING';
+    this.state.tripState.status = 'navigating';
 
     const firstManeuver = targetRoute.maneuvers && targetRoute.maneuvers.length > 0 ? targetRoute.maneuvers[0] : undefined;
     navigationVoiceService.startNavigation(this.state.destinationName || targetRoute.name, firstManeuver);
@@ -188,13 +346,14 @@ class RoadRiskOrchestrator {
 
   public stopNavigation(): void {
     this.state.navigationStatus = 'ARRIVED';
+    this.state.tripState.status = 'completed';
     navigationVoiceService.announceArrival();
     navigationVoiceService.stopNavigation();
     this.notify();
   }
 
   // --------------------------------------------------------------------------
-  // 4. MOBILITY & COST EVALUATION
+  // 7. MOBILITY & COST EVALUATION
   // --------------------------------------------------------------------------
   public getTripCostEstimate(route?: Route): TripCostBreakdown | null {
     const target = route || this.state.selectedRoute;
@@ -205,8 +364,18 @@ class RoadRiskOrchestrator {
     });
   }
 
+  public getCanonicalJourneyCost(route?: Route): JourneyCost | null {
+    const target = route || this.state.selectedRoute;
+    if (!target) return null;
+    return mobilityIntelligenceService.calculateJourneyCost(target.distanceKm, this.state.activeTransportMode, {
+      routeSummary: target.summary,
+      hasTolls: (target.summary || '').toLowerCase().includes('toll'),
+      destinationParkingType: 'paid',
+    });
+  }
+
   // --------------------------------------------------------------------------
-  // 5. INTERNAL EVENT SUBSCRIPTIONS & CORRIDOR DEFENSE
+  // 8. INTERNAL EVENT SUBSCRIPTIONS & CORRIDOR DEFENSE
   // --------------------------------------------------------------------------
   private bindInternalEvents() {
     eventBus.subscribe('GPS_UPDATED', (payload) => {
@@ -221,6 +390,12 @@ class RoadRiskOrchestrator {
 
     eventBus.subscribe('REROUTE_SUGGESTED', () => {
       this.triggerDynamicReroute('Off-route deviation detected');
+    });
+
+    eventBus.subscribe('ROAD_CLOSED', (payload) => {
+      if (this.state.navigationStatus === 'NAVIGATING') {
+        this.triggerDynamicReroute(`Road closure reported: ${payload.data?.title || 'active hazard'}`);
+      }
     });
   }
 

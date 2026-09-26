@@ -19,6 +19,10 @@ import TravelModeSelector from './TravelModeSelector.tsx';
 import DirectionsPanel from './DirectionsPanel.tsx';
 import SelectedPlaceCard from './SelectedPlaceCard.tsx';
 import VoiceCommandHelpModal from './VoiceCommandHelpModal.tsx';
+import { CostIntelligenceCard } from './CostIntelligenceCard.tsx';
+import { AiTripPlannerDrawer } from './AiTripPlannerDrawer.tsx';
+import { PublicTransitCard } from './PublicTransitCard.tsx';
+import { LogisticsDashboardCard } from './LogisticsDashboardCard.tsx';
 import confetti from 'canvas-confetti';
 import {
   Crosshair,
@@ -128,6 +132,7 @@ export const CitizenNavigationControl: React.FC = () => {
   // Selected Place Quick Card & Dedicated Directions Panel State
   const [selectedPlaceInfo, setSelectedPlaceInfo] = useState<SearchResult | null>(null);
   const [showDirectionsPanel, setShowDirectionsPanel] = useState<boolean>(false);
+  const [activeContextualCapability, setActiveContextualCapability] = useState<'none' | 'cost' | 'trip' | 'transit' | 'logistics'>('none');
 
   // Fuel Intelligence State (Requirement 22)
   const [citizenVehicleType, setCitizenVehicleType] = useState<'car' | 'bike'>('car');
@@ -1097,6 +1102,128 @@ export const CitizenNavigationControl: React.FC = () => {
                 <span>{cat.label}</span>
               </button>
             ))}
+          </div>
+
+          {/* RoadRisk Unified Capabilities Selector (Cost Intelligence, AI Trip, Public Transit, Logistics) */}
+          <div
+            id="roadrisk-capabilities-selector"
+            style={{
+              display: 'flex',
+              gap: 6,
+              overflowX: 'auto',
+              padding: '2px 0 6px 0',
+              scrollbarWidth: 'none',
+            }}
+          >
+            <button
+              id="btn-cap-nav"
+              onClick={() => setActiveContextualCapability('none')}
+              style={{
+                background: activeContextualCapability === 'none' ? 'rgba(56, 189, 248, 0.25)' : 'rgba(15, 23, 42, 0.85)',
+                border: `1px solid ${activeContextualCapability === 'none' ? '#38bdf8' : 'rgba(51, 65, 85, 0.7)'}`,
+                borderRadius: 16,
+                padding: '5px 11px',
+                color: activeContextualCapability === 'none' ? '#ffffff' : '#94a3b8',
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              }}
+            >
+              🧭 <span>Safe Nav</span>
+            </button>
+
+            <button
+              id="btn-cap-cost"
+              onClick={() => setActiveContextualCapability(activeContextualCapability === 'cost' ? 'none' : 'cost')}
+              style={{
+                background: activeContextualCapability === 'cost' ? 'rgba(56, 189, 248, 0.25)' : 'rgba(15, 23, 42, 0.85)',
+                border: `1px solid ${activeContextualCapability === 'cost' ? '#38bdf8' : 'rgba(51, 65, 85, 0.7)'}`,
+                borderRadius: 16,
+                padding: '5px 11px',
+                color: activeContextualCapability === 'cost' ? '#ffffff' : '#94a3b8',
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              }}
+            >
+              💰 <span>Trip Cost</span>
+            </button>
+
+            <button
+              id="btn-cap-trip"
+              onClick={() => setActiveContextualCapability(activeContextualCapability === 'trip' ? 'none' : 'trip')}
+              style={{
+                background: activeContextualCapability === 'trip' ? 'rgba(168, 85, 247, 0.25)' : 'rgba(15, 23, 42, 0.85)',
+                border: `1px solid ${activeContextualCapability === 'trip' ? '#c084fc' : 'rgba(51, 65, 85, 0.7)'}`,
+                borderRadius: 16,
+                padding: '5px 11px',
+                color: activeContextualCapability === 'trip' ? '#ffffff' : '#94a3b8',
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              }}
+            >
+              🗓 <span>AI Trip</span>
+            </button>
+
+            <button
+              id="btn-cap-transit"
+              onClick={() => setActiveContextualCapability(activeContextualCapability === 'transit' ? 'none' : 'transit')}
+              style={{
+                background: activeContextualCapability === 'transit' ? 'rgba(16, 185, 129, 0.25)' : 'rgba(15, 23, 42, 0.85)',
+                border: `1px solid ${activeContextualCapability === 'transit' ? '#34d399' : 'rgba(51, 65, 85, 0.7)'}`,
+                borderRadius: 16,
+                padding: '5px 11px',
+                color: activeContextualCapability === 'transit' ? '#ffffff' : '#94a3b8',
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              }}
+            >
+              🚌 <span>Transit</span>
+            </button>
+
+            <button
+              id="btn-cap-logistics"
+              onClick={() => setActiveContextualCapability(activeContextualCapability === 'logistics' ? 'none' : 'logistics')}
+              style={{
+                background: activeContextualCapability === 'logistics' ? 'rgba(245, 158, 11, 0.25)' : 'rgba(15, 23, 42, 0.85)',
+                border: `1px solid ${activeContextualCapability === 'logistics' ? '#fbbf24' : 'rgba(51, 65, 85, 0.7)'}`,
+                borderRadius: 16,
+                padding: '5px 11px',
+                color: activeContextualCapability === 'logistics' ? '#ffffff' : '#94a3b8',
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              }}
+            >
+              📦 <span>Logistics</span>
+            </button>
           </div>
 
           {/* Vehicle / Travel Mode Selector (Car, Bike, Bicycle, Walk, Transit) */}
@@ -2767,6 +2894,80 @@ export const CitizenNavigationControl: React.FC = () => {
           offlineStorageService.getAllRegions().then((r) => setOfflineRegionsCount(r.length)).catch(() => {});
         }}
       />
+
+      {/* 4 Connected RoadRisk Capabilities Floating Overlay Panels (Cost, Trip, Transit, Logistics) */}
+      {activeContextualCapability === 'cost' && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 56,
+            right: 16,
+            zIndex: 600,
+            maxWidth: 'calc(100vw - 32px)',
+          }}
+        >
+          <CostIntelligenceCard
+            distanceKm={selectedRoute?.distanceKm || 22}
+            activeTransportMode={travelMode}
+            routeSummary={selectedRoute?.summary || selectedRoute?.name || ''}
+            hasTolls={(selectedRoute?.summary || '').toLowerCase().includes('toll')}
+            onSelectMode={(m) => setTravelMode(m)}
+            onClose={() => setActiveContextualCapability('none')}
+          />
+        </div>
+      )}
+
+      {activeContextualCapability === 'trip' && (
+        <AiTripPlannerDrawer
+          isOpen={true}
+          onClose={() => setActiveContextualCapability('none')}
+          onFocusLocation={(coords, zoom) => flyToLocation(coords, zoom)}
+          onStartSegmentNavigation={(stop) => {
+            setDestinationLocation(stop.location.name, stop.location.coordinates);
+            handleStartNavigation();
+          }}
+        />
+      )}
+
+      {activeContextualCapability === 'transit' && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 56,
+            right: 16,
+            zIndex: 600,
+            maxWidth: 'calc(100vw - 32px)',
+          }}
+        >
+          <PublicTransitCard
+            originCoords={userLocation.coordinates || currentMission.originCoords || [80.6200, 16.5185]}
+            destinationCoords={currentMission.destinationCoords || [80.7950, 16.5280]}
+            onClose={() => setActiveContextualCapability('none')}
+            onFocusLocation={(coords, zoom) => flyToLocation(coords, zoom)}
+          />
+        </div>
+      )}
+
+      {activeContextualCapability === 'logistics' && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 56,
+            right: 16,
+            zIndex: 600,
+            maxWidth: 'calc(100vw - 32px)',
+          }}
+        >
+          <LogisticsDashboardCard
+            onClose={() => setActiveContextualCapability('none')}
+            onFocusLocation={(coords, zoom) => flyToLocation(coords, zoom)}
+            onStartNavigation={(stop) => {
+              setDestinationLocation(stop.location.name, stop.location.coordinates);
+              handleStartNavigation();
+            }}
+          />
+        </div>
+      )}
 
       {/* Voice Command Discovery Guide Modal ("What can I say?") */}
       <VoiceCommandHelpModal

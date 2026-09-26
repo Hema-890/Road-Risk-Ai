@@ -28,13 +28,23 @@ async function runRegression() {
   let data = null;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      const res = await fetch(url, { headers: { 'User-Agent': 'RoadRiskAI-Test/2.0' } });
+      const res = await fetch(url, { headers: { 'User-Agent': 'RoadRiskAI-Test/2.0' }, signal: AbortSignal.timeout(5000) });
       if (res.ok) {
         data = await res.json();
         break;
       }
     } catch (e) {
-      if (attempt === 3) throw e;
+      if (attempt === 3) {
+        // Fallback to curl in Node test environment
+        try {
+          const { execSync } = await import('node:child_process');
+          const stdout = execSync(`curl -s --connect-timeout 5 "${url}"`, { encoding: 'utf-8' });
+          data = JSON.parse(stdout);
+          break;
+        } catch (curlErr) {
+          throw e;
+        }
+      }
       await new Promise(r => setTimeout(r, 1000 * attempt));
     }
   }
