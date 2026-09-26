@@ -1,0 +1,236 @@
+{
+  "timestamp": "2026-09-25T10:37:04.964Z",
+  "totalVoices": 180,
+  "standaloneResults": [
+    {
+      "language": "English",
+      "code": "en",
+      "passed": true,
+      "voiceName": "Samantha",
+      "text": "Voice test successful. RoadRisk navigation voice is working."
+    },
+    {
+      "language": "Telugu",
+      "code": "te",
+      "passed": true,
+      "voiceName": "Geeta",
+      "text": "వాయిస్ పరీక్ష విజయవంతమైంది. రోడ్‌రిస్క్ నావిగేషన్ వాయిస్ పనిచేస్తోంది."
+    },
+    {
+      "language": "Hindi",
+      "code": "hi",
+      "passed": true,
+      "voiceName": "Lekha",
+      "text": "वॉयस टेस्ट सफल रहा. रोडरिस्क नेविगेशन आवाज काम कर रही है."
+    },
+    {
+      "language": "Tamil",
+      "code": "ta",
+      "passed": true,
+      "voiceName": "Vani",
+      "text": "குரல் சோதனை வெற்றிகரமாக முடிந்தது. ரோட்ரிஸ்க் வழிசெலுத்தல் குரல் இயங்குகிறது."
+    },
+    {
+      "language": "Kannada",
+      "code": "kn",
+      "passed": true,
+      "voiceName": "Soumya",
+      "text": "ಧ್ವನಿ ಪರೀಕ್ಷೆ ಯಶಸ್ವಿಯಾಗಿದೆ. ರೋಡ್‌ರಿಸ್ಕ್ ನ್ಯಾವಿಗೇಷನ್ ಧ್ವನಿ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಿದೆ."
+    }
+  ],
+  "tenRuns": [
+    {
+      "run": 1,
+      "speechRequested": true,
+      "speechStarted": true,
+      "requestLatencyMs": 23,
+      "onstartLatencyMs": 47,
+      "textSample": "ಈಗ Leave from Railway Station Road ಕಡೆ ನೇರವಾಗ",
+      "passed": true
+    },
+    {
+      "run": 2,
+      "speechRequested": true,
+      "speechStarted": true,
+      "requestLatencyMs": 11,
+      "onstartLatencyMs": 43,
+      "textSample": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ",
+      "passed": true
+    },
+    {
+      "run": 3,
+      "speechRequested": true,
+      "speechStarted": true,
+      "requestLatencyMs": 9,
+      "onstartLatencyMs": 37,
+      "textSample": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ",
+      "passed": true
+    },
+    {
+      "run": 4,
+      "speechRequested": true,
+      "speechStarted": true,
+      "requestLatencyMs": 9,
+      "onstartLatencyMs": 44,
+      "textSample": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ",
+      "passed": true
+    },
+    {
+      "run": 5,
+      "speechRequested": true,
+      "speechStarted": true,
+      "requestLatencyMs": 10,
+      "onstartLatencyMs": 41,
+      "textSample": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ",
+      "passed": true
+    },
+    {
+      "run": 6,
+      "speechRequested": true,
+      "speechStarted": true,
+      "requestLatencyMs": 9,
+      "onstartLatencyMs": 36,
+      "textSample": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ",
+      "passed": true
+    },
+    {
+      "run": 7,
+      "speechRequested": true,
+      "speechStarted": true,
+      "requestLatencyMs": 10,
+      "onstartLatencyMs": 39,
+      "textSample": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ",
+      "passed": true
+    },
+    {
+      "run": 8,
+      "speechRequested": true,
+      "speechStarted": true,
+      "requestLatencyMs": 8,
+      "onstartLatencyMs": 38,
+      "textSample": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ",
+      "passed": true
+    },
+    {
+      "run": 9,
+      "speechRequested": true,
+      "speechStarted": true,
+      "requestLatencyMs": 11,
+      "onstartLatencyMs": 39,
+      "textSample": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ",
+      "passed": true
+    },
+    {
+      "run": 10,
+      "speechRequested": true,
+      "speechStarted": true,
+      "requestLatencyMs": 9,
+      "onstartLatencyMs": 36,
+      "textSample": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ",
+      "passed": true
+    }
+  ],
+  "tenRunsPassed": 10,
+  "hasCancel": true,
+  "voiceErrorsCount": 14,
+  "voiceErrors": [
+    {
+      "type": "onerror",
+      "text": "Voice test successful. RoadRisk navigation voice is working.",
+      "lang": "en-US",
+      "error": "interrupted",
+      "time": 1790332549731
+    },
+    {
+      "type": "onerror",
+      "text": "వాయిస్ పరీక్ష విజయవంతమైంది. రోడ్‌రిస్క్ నావిగేషన్ వాయిస్ పనిచేస్తోంది.",
+      "lang": "te-IN",
+      "error": "interrupted",
+      "time": 1790332552248
+    },
+    {
+      "type": "onerror",
+      "text": "वॉयस टेस्ट सफल रहा. रोडरिस्क नेविगेशन आवाज काम कर रही है.",
+      "lang": "hi-IN",
+      "error": "interrupted",
+      "time": 1790332554764
+    },
+    {
+      "type": "onerror",
+      "text": "குரல் சோதனை வெற்றிகரமாக முடிந்தது. ரோட்ரிஸ்க் வழிசெலுத்தல் குரல் இயங்குகிறது.",
+      "lang": "ta-IN",
+      "error": "interrupted",
+      "time": 1790332557281
+    },
+    {
+      "type": "onerror",
+      "text": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ. Leave from Railway Station Road.",
+      "lang": "kn-IN",
+      "error": "interrupted",
+      "time": 1790332574305
+    },
+    {
+      "type": "onerror",
+      "text": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ. Leave from Railway Station Road.",
+      "lang": "kn-IN",
+      "error": "interrupted",
+      "time": 1790332579195
+    },
+    {
+      "type": "onerror",
+      "text": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ. Leave from Railway Station Road.",
+      "lang": "kn-IN",
+      "error": "interrupted",
+      "time": 1790332584063
+    },
+    {
+      "type": "onerror",
+      "text": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ. Leave from Railway Station Road.",
+      "lang": "kn-IN",
+      "error": "interrupted",
+      "time": 1790332588945
+    },
+    {
+      "type": "onerror",
+      "text": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ. Leave from Railway Station Road.",
+      "lang": "kn-IN",
+      "error": "interrupted",
+      "time": 1790332593812
+    },
+    {
+      "type": "onerror",
+      "text": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ. Leave from Railway Station Road.",
+      "lang": "kn-IN",
+      "error": "interrupted",
+      "time": 1790332598678
+    },
+    {
+      "type": "onerror",
+      "text": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ. Leave from Railway Station Road.",
+      "lang": "kn-IN",
+      "error": "interrupted",
+      "time": 1790332603547
+    },
+    {
+      "type": "onerror",
+      "text": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ. Leave from Railway Station Road.",
+      "lang": "kn-IN",
+      "error": "interrupted",
+      "time": 1790332608412
+    },
+    {
+      "type": "onerror",
+      "text": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ. Leave from Railway Station Road.",
+      "lang": "kn-IN",
+      "error": "interrupted",
+      "time": 1790332613279
+    },
+    {
+      "type": "onerror",
+      "text": "Recommended Route ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ. Leave from Railway Station Road.",
+      "lang": "kn-IN",
+      "error": "interrupted",
+      "time": 1790332618145
+    }
+  ]
+}

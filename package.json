@@ -1,0 +1,42 @@
+{
+  "name": "road-risk-ai",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "server": "node server/index.cjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "node scripts/test-cloud-infrastructure.mjs && node scripts/test-uphc-regression.mjs && node scripts/test-search-queries.mjs && node scripts/test-global-search.mjs && node scripts/test-place-and-map-experience.mjs && node scripts/test-traffic-integration.mjs && node scripts/test-end-to-end.mjs && node scripts/test-production-preview.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
+    "@types/leaflet": "^1.9.22",
+    "canvas-confetti": "^1.9.4",
+    "firebase": "^12.19.0",
+    "firebase-admin": "^14.4.0",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^1.16.0",
+    "maplibre-gl": "^6.11.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/node": "^22.10.2",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^10.11.0",
+    "pg": "^8.23.0",
+    "puppeteer-core": "^25.11.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.70.1",
+    "vite": "^6.0.3"
+  }
+}
