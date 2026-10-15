@@ -20,6 +20,8 @@ import { etaService } from './etaService.ts';
 import { mobilityIntelligenceService, type TripCostBreakdown } from './mobilityIntelligenceService.ts';
 import { aiTripPlannerService } from './aiTripPlannerService.ts';
 import { logisticsService } from './logisticsService.ts';
+import { modeService } from './modeService.ts';
+import type { RoadRiskMode } from '../types/modes.ts';
 import type {
   Route,
   TransportMode,
@@ -46,6 +48,7 @@ export interface OrchestratorState {
   currentGpsState: GpsSignalState;
   activeTransportMode: TransportMode;
   activeObjective: RouteObjective;
+  userMode: RoadRiskMode;
   originCoordinates: [number, number] | null;
   destinationCoordinates: [number, number] | null;
   destinationName: string;
@@ -83,6 +86,7 @@ class RoadRiskOrchestrator {
       currentGpsState: 'AVAILABLE',
       activeTransportMode: 'CAR',
       activeObjective: 'FASTEST',
+      userMode: modeService.getActiveMode(),
       originCoordinates: [80.6480, 16.5062],
       destinationCoordinates: null,
       destinationName: '',
@@ -117,6 +121,25 @@ class RoadRiskOrchestrator {
 
   public getState(): OrchestratorState {
     return { ...this.state };
+  }
+
+  public getUserMode(): RoadRiskMode {
+    return this.state.userMode;
+  }
+
+  public setUserMode(mode: RoadRiskMode): void {
+    if (this.state.userMode === mode) return;
+    this.state.userMode = mode;
+    modeService.setMode(mode);
+    if (this.state.calculatedRoutes.length > 0) {
+      const reRanked = modeService.rankRoutesForMode(this.state.calculatedRoutes, mode);
+      this.state.calculatedRoutes = reRanked;
+      this.state.selectedRoute = reRanked[0] || null;
+      if (this.state.selectedRoute) {
+        this.state.tripState.route = this.state.selectedRoute;
+      }
+    }
+    this.notify();
   }
 
   public getTripState(): RoadRiskTripState {
@@ -217,7 +240,7 @@ class RoadRiskOrchestrator {
       const routingRes = await routingService.calculateRoutes(origin, destination, {
         profile: mode,
       });
-      const corridors = routingRes.routes;
+      const corridors = modeService.rankRoutesForMode(routingRes.routes, this.state.userMode);
       this.state.calculatedRoutes = corridors;
       const topRoute = corridors[0] || null;
       this.state.selectedRoute = topRoute;

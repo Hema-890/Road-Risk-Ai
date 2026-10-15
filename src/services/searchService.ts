@@ -7,6 +7,7 @@
 // ==============================================================================
 
 import trafficService from './trafficService.ts';
+import { modeService } from './modeService.ts';
 
 /**
  * Calculates Haversine distance in kilometers between two [lng, lat] coordinates
@@ -65,7 +66,11 @@ export type SearchPlaceType =
   | 'restaurant'
   | 'landmark'
   | 'poi'
-  | 'place';
+  | 'place'
+  | 'campus_building'
+  | 'campus_poi'
+  | 'accessible_facility'
+  | 'tourist_attraction';
 
 export interface SearchResult {
   id: string;
@@ -626,12 +631,30 @@ class SearchService {
     let detectedLanguage: 'en' | 'te' | 'hi' | 'ta' | 'kn' = 'en';
     if (/[\u0C00-\u0C7F]/.test(text)) detectedLanguage = 'te';
     else if (/[\u0900-\u097F]/.test(text)) detectedLanguage = 'hi';
-    else if (/[\u0B80-\u0BFF]/.test(text)) detectedLanguage = 'ta';
     else if (/[\u0C80-\u0CFF]/.test(text)) detectedLanguage = 'kn';
 
     // 2. Category Extraction
     let category: SearchPlaceType | undefined;
     if (
+      lower.includes('ai & ds') || lower.includes('cse') || lower.includes('department') || lower.includes('dept') ||
+      lower.includes('laboratory') || lower.includes('lab') || lower.includes('canteen') || lower.includes('hostel') ||
+      lower.includes('auditorium') || lower.includes('campus')
+    ) {
+      category = 'campus_poi';
+    } else if (
+      lower.includes('library') || lower.includes('central library') || text.includes('లైబ్రరీ')
+    ) {
+      category = 'campus_poi';
+    } else if (
+      lower.includes('tourist') || lower.includes('places to visit') || lower.includes('attractions') ||
+      lower.includes('monument') || lower.includes('fort') || lower.includes('heritage') || lower.includes('sightseeing')
+    ) {
+      category = 'tourist_attraction';
+    } else if (
+      lower.includes('accessible parking') || lower.includes('wheelchair parking')
+    ) {
+      category = 'accessible_facility';
+    } else if (
       lower.includes('restaurant') || lower.includes('food') || lower.includes('hotel') || lower.includes('cafe') || lower.includes('dhaba') || lower.includes('tiffin') ||
       text.includes('భోజనం') || text.includes('హోటల్') || text.includes('రెస్టారెంట్') || text.includes('रेस्टोरेंट') || text.includes('உணவகம்') || text.includes('ರೆಸ್ಟೋರೆಂಟ್')
     ) {
@@ -650,7 +673,7 @@ class SearchService {
       category = 'ev';
     } else if (
       lower.includes('parking') || lower.includes('car park') ||
-      text.includes('పార్కింగ్') || text.includes('पार्किंग') || text.includes('பார்க்கிங்') || text.includes('ಪಾರ್ಕಿಂಗ್')
+      text.includes('పార్కింగ్') || text.includes('पार्किंग') || text.includes('பார்க்கిங்') || text.includes('ಪಾರ್ಕಿಂಗ್')
     ) {
       category = 'parking' as any;
     } else if (
@@ -670,17 +693,17 @@ class SearchService {
       dietary = 'non-veg';
     }
 
-    // 4. Budget Constraint Extraction (e.g. "under ₹500", "below 1000", "< 500")
+    // 4. Budget Constraint Extraction (e.g. "under ₹500", "below 1000", "< 500", "₹1500 trip")
     let maxBudgetInr: number | undefined;
-    const budgetMatch = lower.match(/(?:under|below|less than|<|within budget of)\s*(?:₹|rs\.?|inr)?\s*(\d+)/i) ||
-                        lower.match(/(?:₹|rs\.?|inr)\s*(\d+)\s*(?:or less|budget|max)/i);
+    const budgetMatch = lower.match(/(?:under|below|less than|<|within budget of|plan a|budget)\s*(?:₹|rs\.?|inr)?\s*(\d+)/i) ||
+                        lower.match(/(?:₹|rs\.?|inr)\s*(\d+)\s*(?:or less|budget|max|trip)/i);
     if (budgetMatch) {
       maxBudgetInr = parseInt(budgetMatch[1], 10);
     }
 
-    // 5. Distance Constraint Extraction (e.g. "within 2 km", "< 5km", "nearby")
+    // 5. Distance Constraint Extraction (e.g. "within 2 km", "< 5km", "nearby", "within 10 km")
     let maxDistanceKm: number | undefined;
-    const distanceMatch = lower.match(/(?:within|<|under)\s*(\d+(?:\.\d+)?)\s*(?:km|kms|kilometers|kilometer)/i);
+    const distanceMatch = lower.match(/(?:within|<|under|places within)\s*(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(?:km|kms|kilometers|kilometer)/i);
     if (distanceMatch) {
       maxDistanceKm = parseFloat(distanceMatch[1]);
     } else if (lower.includes('nearby') || lower.includes('near me') || lower.includes('close by')) {
@@ -692,15 +715,15 @@ class SearchService {
     if (lower.includes('parking') || lower.includes('valet')) facilities.push('parking');
     if (lower.includes('ev') || lower.includes('charging')) facilities.push('ev_charging');
     if (lower.includes('wifi') || lower.includes('wi-fi')) facilities.push('wifi');
-    if (lower.includes('wheelchair') || lower.includes('accessible') || lower.includes('ramp')) facilities.push('wheelchair_accessible');
+    if (lower.includes('wheelchair') || lower.includes('accessible') || lower.includes('ramp') || lower.includes('step-free')) facilities.push('wheelchair_accessible');
     if (lower.includes('outdoor') || lower.includes('open air') || lower.includes('rooftop')) facilities.push('outdoor_seating');
 
     // 7. Clean Query for Underlying Geospatial Search Engine
     let cleanedKeyword = text
-      .replace(/(?:find|show|search|look for|get|where is|navigate to)\s+(?:a|an|the)?/gi, '')
+      .replace(/(?:find|show|search|look for|get|where is|navigate to|take me to|show me the nearest|find the nearest|plan a)\s+(?:a|an|the)?/gi, '')
       .replace(/(?:under|below|less than|<)\s*(?:₹|rs\.?|inr)?\s*\d+/gi, '')
-      .replace(/(?:within|<|under)\s*\d+(?:\.\d+)?\s*(?:km|kms|kilometers|kilometer)/gi, '')
-      .replace(/(?:with|having)\s+(?:parking|ev|charging|wifi|wheelchair)/gi, '')
+      .replace(/(?:within|<|under|places within)\s*\d+(?:\.\d+)?\s*(?:km|kms|kilometers|kilometer)/gi, '')
+      .replace(/(?:with|having)\s+(?:parking|ev|charging|wifi|wheelchair|accessible)/gi, '')
       .replace(/(?:nearby|near me|close by)/gi, '')
       .replace(/\s+/g, ' ')
       .trim();
@@ -731,6 +754,53 @@ class SearchService {
   ): Promise<{ results: SearchResult[]; constraints: NaturalLanguageQueryConstraints }> {
     const constraints = this.parseNaturalLanguageQuery(query);
     const searchTarget = constraints.cleanedKeyword || query;
+    const activeMode = modeService.getActiveMode();
+
+    const localResults: SearchResult[] = [];
+
+    // 1. Campus Mode Search & Campus POI Recognition
+    if (activeMode === 'CAMPUS' || constraints.category === 'campus_poi' || query.toLowerCase().includes('campus') || query.toLowerCase().includes('department') || query.toLowerCase().includes('cse') || query.toLowerCase().includes('ai & ds') || query.toLowerCase().includes('library') || query.toLowerCase().includes('canteen') || query.toLowerCase().includes('hostel')) {
+      const campusMatches = modeService.searchCampus(query);
+      for (const poi of campusMatches) {
+        localResults.push({
+          id: poi.id,
+          name: poi.name,
+          displayName: `${poi.name}${poi.buildingName ? ` (${poi.buildingName})` : ''}`,
+          type: 'campus_poi',
+          category: poi.category,
+          latitude: poi.coordinates[1],
+          longitude: poi.coordinates[0],
+          coordinates: poi.coordinates,
+          address: `${poi.buildingName || 'Campus'} - ${poi.isAccessible ? '♿ Step-Free Accessible' : 'Standard Access'}`,
+          city: 'Campus Ground',
+          provider: 'Local',
+          source: 'Verified Campus Registry',
+          confidence: 0.99,
+        });
+      }
+    }
+
+    // 2. Tourist Mode Search & Attraction Recognition
+    if (activeMode === 'TOURIST' || constraints.category === 'tourist_attraction' || query.toLowerCase().includes('visit') || query.toLowerCase().includes('tourist') || query.toLowerCase().includes('trip') || query.toLowerCase().includes('photography') || query.toLowerCase().includes('religious') || query.toLowerCase().includes('historical')) {
+      const touristMatches = modeService.searchTouristAttractions(query);
+      for (const attr of touristMatches) {
+        localResults.push({
+          id: attr.id,
+          name: attr.name,
+          displayName: `${attr.name} [₹${attr.entryFeeInr}${attr.isEntryFeeVerified ? '' : ' est'}]`,
+          type: 'tourist_attraction',
+          category: attr.category,
+          latitude: attr.coordinates[1],
+          longitude: attr.coordinates[0],
+          coordinates: attr.coordinates,
+          address: `${attr.address} • Hours: ${attr.isOpeningHoursVerified ? attr.openingHours : 'Opening hours not verified'}`,
+          city: attr.city,
+          provider: 'Local',
+          source: 'Verified Tourist Registry',
+          confidence: 0.98,
+        });
+      }
+    }
 
     let results = await this.search(searchTarget, options);
 
@@ -739,9 +809,20 @@ class SearchService {
       results = results.filter((r) => (r.distanceKm ?? 0) <= constraints.maxDistanceKm!);
     }
 
-    // Annotate results with extracted metadata
+    // Prepend local verified results
+    const combinedResults = [...localResults, ...results];
+
+    // Annotate accessibility status honestly: if no verified wheelchair data exists, mark unverified
+    const finalResults = combinedResults.map((r) => {
+      if (r.provider === 'Local') return r;
+      return {
+        ...r,
+        address: r.address ? `${r.address} (Accessibility status not verified)` : 'Accessibility status not verified',
+      };
+    });
+
     return {
-      results,
+      results: finalResults,
       constraints,
     };
   }

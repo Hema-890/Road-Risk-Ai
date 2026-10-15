@@ -175,6 +175,13 @@ export interface VoicePhrases {
   tripBudgetStatus: (cost: number, budget: number) => string;
   nextDeliveryStop: (customer: string) => string;
   deliveryArrived: () => string;
+  stairsAhead: () => string;
+  accessibleEntranceOnLeft: () => string;
+  useRampInsteadOfStairs: () => string;
+  approachingCampusDepartment: (dept: string) => string;
+  arrivedAtCampusFacility: (facility: string) => string;
+  nextTouristAttraction: (name: string) => string;
+  touristStopSkipped: () => string;
 }
 
 const PHRASES: Record<NormalizedVoiceLanguage, VoicePhrases> = {
@@ -201,6 +208,13 @@ const PHRASES: Record<NormalizedVoiceLanguage, VoicePhrases> = {
     tripBudgetStatus: (cost, budget) => `Estimated cost is ${cost} rupees, within your ${budget} rupees budget.`,
     nextDeliveryStop: (customer) => `Proceed to next delivery stop: ${customer}.`,
     deliveryArrived: () => 'Arrived at delivery destination.',
+    stairsAhead: () => 'Stairs detected ahead. Proceed with caution.',
+    accessibleEntranceOnLeft: () => 'Accessible entrance is on the left.',
+    useRampInsteadOfStairs: () => 'Use the ramp instead of the stairs.',
+    approachingCampusDepartment: (dept) => `Approaching ${dept}.`,
+    arrivedAtCampusFacility: (facility) => `Arrived at ${facility}.`,
+    nextTouristAttraction: (name) => `Next attraction: ${name}.`,
+    touristStopSkipped: () => 'Attraction skipped. Recalculating itinerary.',
   },
   te: {
     startRoute: (dest, firstInst) => `${dest} కు నావిగేషన్ ప్రారంభమవుతోంది. ${firstInst ? firstInst + '.' : 'ముందుకు సాగండి.'}`,
@@ -225,6 +239,13 @@ const PHRASES: Record<NormalizedVoiceLanguage, VoicePhrases> = {
     tripBudgetStatus: (cost, budget) => `అంచనా వ్యయం ${cost} రూపాయలు, మీ బడ్జెట్ పరిధిలోనే ఉంది.`,
     nextDeliveryStop: (customer) => `తదుపరి డెలివరీ స్టాప్: ${customer} కు వెళ్లండి.`,
     deliveryArrived: () => 'డెలివరీ గమ్యస్థానానికి చేరుకున్నారు.',
+    stairsAhead: () => 'ముందు మెట్లు ఉన్నాయి. జాగ్రత్తగా సాగండి.',
+    accessibleEntranceOnLeft: () => 'ఎడమ వైపు సులభ ప్రవేశ ద్వారం ఉంది.',
+    useRampInsteadOfStairs: () => 'మెట్లకు బదులుగా ర్యాంప్ ఉపయోగించండి.',
+    approachingCampusDepartment: (dept) => `${dept} సమీపిస్తోంది.`,
+    arrivedAtCampusFacility: (facility) => `${facility} కు చేరుకున్నారు.`,
+    nextTouristAttraction: (name) => `తదుపరి సందర్శనీయ ప్రదేశం: ${name}.`,
+    touristStopSkipped: () => 'ప్రదేశం దాటవేయబడింది. ప్రయాణ ప్రణాళికను తిరిగి లెక్కిస్తున్నాము.',
   },
   hi: {
     startRoute: (dest, firstInst) => `${dest} के लिए नेविगेशन शुरू हो रहा है. ${firstInst ? firstInst + '.' : 'आगे बढ़ें.'}`,
@@ -249,6 +270,13 @@ const PHRASES: Record<NormalizedVoiceLanguage, VoicePhrases> = {
     tripBudgetStatus: (cost, budget) => `अनुमानित लागत ${cost} रुपये है, आपके बजट के भीतर.`,
     nextDeliveryStop: (customer) => `अगले डिलीवरी स्टॉप पर आगे बढ़ें: ${customer}.`,
     deliveryArrived: () => 'डिलीवरी स्थान पर पहुंच गए हैं.',
+    stairsAhead: () => 'आगे सीढ़ियां हैं. कृपया सावधानी से चलें.',
+    accessibleEntranceOnLeft: () => 'सुलभ प्रवेश द्वार बाईं ओर है.',
+    useRampInsteadOfStairs: () => 'सीढ़ियों के बजाय रैंप का उपयोग करें.',
+    approachingCampusDepartment: (dept) => `${dept} के पास पहुंच रहे हैं.`,
+    arrivedAtCampusFacility: (facility) => `${facility} पर पहुंच गए हैं.`,
+    nextTouristAttraction: (name) => `अगला आकर्षण: ${name}.`,
+    touristStopSkipped: () => 'स्थान छोड़ दिया गया. नया यात्रा कार्यक्रम तैयार हो रहा है.',
   },
   ta: {
     startRoute: (dest, firstInst) => `${dest} க்கான வழிசெலுத்தல் தொடங்குகிறது. ${firstInst ? firstInst + '.' : 'முன்னேறவும்.'}`,
@@ -273,6 +301,13 @@ const PHRASES: Record<NormalizedVoiceLanguage, VoicePhrases> = {
     tripBudgetStatus: (cost, budget) => `மதிப்பிடப்பட்ட செலவு ${cost} ரூபாய்.`,
     nextDeliveryStop: (customer) => `அடுத்த டெலிவரி: ${customer}.`,
     deliveryArrived: () => 'டெலிவரி இடத்தை அடைந்துவிட்டீர்கள்.',
+    stairsAhead: () => 'முன்னால் படிக்கட்டுகள் உள்ளன. கவனமாக செல்லவும்.',
+    accessibleEntranceOnLeft: () => 'இடதுபுறம் மாற்றுத்திறனாளி நுழைவாயில் உள்ளது.',
+    useRampInsteadOfStairs: () => 'படிக்கட்டுகளுக்கு பதிலாக சாய்வுதளத்தை பயன்படுத்தவும்.',
+    approachingCampusDepartment: (dept) => `${dept} நெருங்குகிறது.`,
+    arrivedAtCampusFacility: (facility) => `${facility} ஐ அடைந்துவிட்டீர்கள்.`,
+    nextTouristAttraction: (name) => `அடுத்த சுற்றுலா தளம்: ${name}.`,
+    touristStopSkipped: () => 'தளம் தவிர்க்கப்பட்டது. பயண திட்டம் மாற்றியமைக்கப்படுகிறது.',
   },
   kn: {
     startRoute: (dest, firstInst) => `${dest} ಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭವಾಗಿದೆ. ${firstInst ? firstInst + '.' : 'ಮುಂದುವರಿಯಿರಿ.'}`,
@@ -297,6 +332,13 @@ const PHRASES: Record<NormalizedVoiceLanguage, VoicePhrases> = {
     tripBudgetStatus: (cost, budget) => `ಅಂದಾಜು ವೆಚ್ಚ ${cost} ರೂಪಾಯಿಗಳು.`,
     nextDeliveryStop: (customer) => `ಮುಂದಿನ ಡೆಲಿವರಿ ನಿಲ್ದಾಣ: ${customer}.`,
     deliveryArrived: () => 'ಡೆಲಿವರಿ ಸ್ಥಳ ತಲುಪಿದ್ದೀರಿ.',
+    stairsAhead: () => 'ಮುಂದೆ ಮೆಟ್ಟಿಲುಗಳಿವೆ. ಎಚ್ಚರಿಕೆಯಿಂದ ಮುಂದುವರಿಯಿರಿ.',
+    accessibleEntranceOnLeft: () => 'ಎಡಭಾಗದಲ್ಲಿ ಸುಲಭ ಪ್ರವೇಶ ದ್ವಾರವಿದೆ.',
+    useRampInsteadOfStairs: () => 'ಮೆಟ್ಟಿಲುಗಳ ಬದಲಿಗೆ ಇಳಿಜಾರು ರ‍್ಯಾಂಪ್ ಬಳಸಿ.',
+    approachingCampusDepartment: (dept) => `${dept} ಹತ್ತಿರವಾಗುತ್ತಿದೆ.`,
+    arrivedAtCampusFacility: (facility) => `${facility} ತಲುಪಿದ್ದೀರಿ.`,
+    nextTouristAttraction: (name) => `ಮುಂದಿನ ಪ್ರವಾಸಿ ತಾಣ: ${name}.`,
+    touristStopSkipped: () => 'ಸ್ಥಳ ಬಿಟ್ಟುಬಿಡಲಾಗಿದೆ. ಪ್ರವಾಸ ವೇಳಾಪಟ್ಟಿ ಬದಲಾಯಿಸಲಾಗುತ್ತಿದೆ.',
   },
 };
 
@@ -887,6 +929,44 @@ export class NavigationVoiceService {
   public announceDeliveryArrived() {
     const phrases = PHRASES[this.language] || PHRASES.en;
     this.speak(phrases.deliveryArrived(), VoicePriority.P4_MANEUVER, 'delivery_arrived', true);
+  }
+
+  // Accessibility Announcements
+  public announceStairsAhead() {
+    const phrases = PHRASES[this.language] || PHRASES.en;
+    this.speak(phrases.stairsAhead(), VoicePriority.P1_SAFETY_HAZARD, 'stairs_ahead', true);
+  }
+
+  public announceAccessibleEntranceOnLeft() {
+    const phrases = PHRASES[this.language] || PHRASES.en;
+    this.speak(phrases.accessibleEntranceOnLeft(), VoicePriority.P4_MANEUVER, 'accessible_entrance', true);
+  }
+
+  public announceUseRampInsteadOfStairs() {
+    const phrases = PHRASES[this.language] || PHRASES.en;
+    this.speak(phrases.useRampInsteadOfStairs(), VoicePriority.P1_SAFETY_HAZARD, 'use_ramp', true);
+  }
+
+  // Campus Announcements
+  public announceApproachingCampusDepartment(dept: string) {
+    const phrases = PHRASES[this.language] || PHRASES.en;
+    this.speak(phrases.approachingCampusDepartment(dept), VoicePriority.P4_MANEUVER, 'campus_dept', true);
+  }
+
+  public announceArrivedAtCampusFacility(facility: string) {
+    const phrases = PHRASES[this.language] || PHRASES.en;
+    this.speak(phrases.arrivedAtCampusFacility(facility), VoicePriority.P4_MANEUVER, 'campus_arrival', true);
+  }
+
+  // Tourist Announcements
+  public announceNextTouristAttraction(name: string) {
+    const phrases = PHRASES[this.language] || PHRASES.en;
+    this.speak(phrases.nextTouristAttraction(name), VoicePriority.P4_MANEUVER, 'next_tourist_stop', true);
+  }
+
+  public announceTouristStopSkipped() {
+    const phrases = PHRASES[this.language] || PHRASES.en;
+    this.speak(phrases.touristStopSkipped(), VoicePriority.P3_REROUTE, 'tourist_skip', true);
   }
 
   // Development & Manual Audible Test API (Mandated by P0 Spec Sections 15 & 16)

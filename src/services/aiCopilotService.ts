@@ -13,7 +13,16 @@ import { mobilityIntelligenceService } from './mobilityIntelligenceService.ts';
 import { aiTripPlannerService } from './aiTripPlannerService.ts';
 import { transitService } from './transitService.ts';
 import { logisticsService } from './logisticsService.ts';
+import { modeService } from './modeService.ts';
 import type { RouteObjective, TransportMode, TripLocation } from '../types/index.ts';
+import type { RoadRiskMode } from '../types/modes.ts';
+
+export interface CopilotAction {
+  type: string;
+  target?: string;
+  parameters?: Record<string, any>;
+  confirmationRequired: boolean;
+}
 
 export interface CopilotOperation {
   type:
@@ -29,6 +38,10 @@ export interface CopilotOperation {
     | 'PLAN_DELIVERY'
     | 'START_NAVIGATION'
     | 'SWITCH_MODE'
+    | 'SWITCH_USER_MODE'
+    | 'ACCESSIBILITY_CONSTRAINT'
+    | 'CAMPUS_NAVIGATION'
+    | 'TOURIST_NAVIGATION'
     | 'CHANGE_OBJECTIVE'
     | 'PREFERENCE_UPDATED'
     | 'INFO_PROVIDED';
@@ -40,6 +53,7 @@ export interface CopilotSession {
   destinationName?: string;
   destinationCoords?: [number, number];
   activeObjective: RouteObjective;
+  userMode: RoadRiskMode;
   avoidHighways: boolean;
   avoidTolls: boolean;
   transportMode: TransportMode;
@@ -58,12 +72,17 @@ export interface CopilotResponse {
     | 'POI_ADDED'
     | 'INFO_PROVIDED'
     | 'MODE_SWITCHED'
+    | 'USER_MODE_SWITCHED'
+    | 'ACCESSIBILITY_APPLIED'
+    | 'CAMPUS_NAVIGATED'
+    | 'TOURIST_ACTION_EXECUTED'
     | 'TRIP_PLANNED'
     | 'COST_EVALUATED'
     | 'TRANSIT_ROUTED'
     | 'LOGISTICS_PLANNED'
     | 'UNKNOWN';
   operation?: CopilotOperation;
+  copilotAction?: CopilotAction;
   metadata?: any;
 }
 
@@ -71,6 +90,7 @@ class AiCopilotService {
   private session: CopilotSession = {
     sessionId: `copilot_${Date.now()}`,
     activeObjective: 'FASTEST',
+    userMode: modeService.getActiveMode(),
     avoidHighways: false,
     avoidTolls: false,
     transportMode: 'CAR',
@@ -86,6 +106,7 @@ class AiCopilotService {
     this.session = {
       sessionId: `copilot_${Date.now()}`,
       activeObjective: 'FASTEST',
+      userMode: modeService.getActiveMode(),
       avoidHighways: false,
       avoidTolls: false,
       transportMode: 'CAR',
@@ -446,8 +467,168 @@ class AiCopilotService {
       }
     }
 
+    // -------------------------------------------------------------------------
+    // 6. ROADRISK USER MODES & MODE-SPECIFIC COPILOT ACTIONS
+    // -------------------------------------------------------------------------
+
+    // A. Mode Switching Commands
+    if (lower.includes('accessibility mode') || lower.includes('wheelchair mode') || lower.includes('accessible mode')) {
+      this.session.userMode = 'ACCESSIBILITY';
+      roadRiskOrchestrator.setUserMode('ACCESSIBILITY');
+      const resp = 'Accessibility Mode enabled. Routes will prioritize step-free paths, ramps, and accessible facilities.';
+      this.recordAssistantResponse(resp);
+      navigationVoiceService.speak(resp, 4);
+      return {
+        spokenResponse: resp,
+        actionTaken: 'USER_MODE_SWITCHED',
+        operation: { type: 'SWITCH_USER_MODE', payload: 'ACCESSIBILITY' },
+        copilotAction: { type: 'SET_MODE', parameters: { mode: 'ACCESSIBILITY' }, confirmationRequired: false },
+      };
+    }
+
+    if (lower.includes('campus mode') || lower.includes('university mode')) {
+      this.session.userMode = 'CAMPUS';
+      roadRiskOrchestrator.setUserMode('CAMPUS');
+      const resp = 'Campus Mode enabled. Institutional map layers, internal walkways, and building navigation active.';
+      this.recordAssistantResponse(resp);
+      navigationVoiceService.speak(resp, 4);
+      return {
+        spokenResponse: resp,
+        actionTaken: 'USER_MODE_SWITCHED',
+        operation: { type: 'SWITCH_USER_MODE', payload: 'CAMPUS' },
+        copilotAction: { type: 'SET_MODE', parameters: { mode: 'CAMPUS' }, confirmationRequired: false },
+      };
+    }
+
+    if (lower.includes('tourist mode') || lower.includes('travel mode') || lower.includes('traveler mode')) {
+      this.session.userMode = 'TOURIST';
+      roadRiskOrchestrator.setUserMode('TOURIST');
+      const resp = 'Tourist Mode enabled. Cultural attractions, scenic routes, and itinerary planner active.';
+      this.recordAssistantResponse(resp);
+      navigationVoiceService.speak(resp, 4);
+      return {
+        spokenResponse: resp,
+        actionTaken: 'USER_MODE_SWITCHED',
+        operation: { type: 'SWITCH_USER_MODE', payload: 'TOURIST' },
+        copilotAction: { type: 'SET_MODE', parameters: { mode: 'TOURIST' }, confirmationRequired: false },
+      };
+    }
+
+    if (lower.includes('standard mode') || lower.includes('default mode')) {
+      this.session.userMode = 'STANDARD';
+      roadRiskOrchestrator.setUserMode('STANDARD');
+      const resp = 'Standard RoadRisk Navigation enabled.';
+      this.recordAssistantResponse(resp);
+      navigationVoiceService.speak(resp, 4);
+      return {
+        spokenResponse: resp,
+        actionTaken: 'USER_MODE_SWITCHED',
+        operation: { type: 'SWITCH_USER_MODE', payload: 'STANDARD' },
+        copilotAction: { type: 'SET_MODE', parameters: { mode: 'STANDARD' }, confirmationRequired: false },
+      };
+    }
+
+    // B. Accessibility-Specific Copilot Operations
+    if (lower.includes('step-free') || lower.includes('step free') || lower.includes('avoid stairs') || lower.includes('no stairs')) {
+      modeService.updateAccessibilityPreferences({ avoidStairs: true, stepFreeRoute: true });
+      const resp = 'Configured step-free preference. Reranking routes to avoid stairs and steep gradients.';
+      this.recordAssistantResponse(resp);
+      navigationVoiceService.speak(resp, 4);
+      return {
+        spokenResponse: resp,
+        actionTaken: 'ACCESSIBILITY_APPLIED',
+        operation: { type: 'ACCESSIBILITY_CONSTRAINT', payload: { avoidStairs: true, stepFreeRoute: true } },
+        copilotAction: { type: 'APPLY_ACCESSIBILITY_FILTER', parameters: { avoidStairs: true, stepFree: true }, confirmationRequired: false },
+      };
+    }
+
+    if (lower.includes('accessible parking') || lower.includes('wheelchair parking')) {
+      const resp = 'Locating verified wheelchair accessible parking bays adjacent to entrances.';
+      this.recordAssistantResponse(resp);
+      navigationVoiceService.speak(resp, 4);
+      return {
+        spokenResponse: resp,
+        actionTaken: 'ACCESSIBILITY_APPLIED',
+        operation: { type: 'ACCESSIBILITY_CONSTRAINT', payload: { category: 'parking', wheelchairAccessible: true } },
+        copilotAction: { type: 'SEARCH_ACCESSIBLE_POI', target: 'parking', confirmationRequired: false },
+      };
+    }
+
+    // C. Campus-Specific Copilot Operations
+    if (
+      lower.includes('ai department') || lower.includes('ai & ds') || lower.includes('cse') ||
+      lower.includes('library') || lower.includes('canteen') || lower.includes('hostel') ||
+      lower.includes('nearest lab') || lower.includes('medical center') || lower.includes('auditorium')
+    ) {
+      const campusMatches = modeService.searchCampus(text);
+      if (campusMatches.length > 0) {
+        const topPoi = campusMatches[0];
+        const resp = `Found ${topPoi.name}${topPoi.buildingName ? ` at ${topPoi.buildingName}` : ''}. Planning pedestrian path.`;
+        this.recordAssistantResponse(resp);
+        navigationVoiceService.announceApproachingCampusDepartment(topPoi.name);
+        return {
+          spokenResponse: resp,
+          actionTaken: 'CAMPUS_NAVIGATED',
+          operation: { type: 'CAMPUS_NAVIGATION', payload: topPoi },
+          copilotAction: { type: 'NAVIGATE_CAMPUS_POI', target: topPoi.id, parameters: { coordinates: topPoi.coordinates }, confirmationRequired: false },
+          metadata: { campusPOI: topPoi },
+        };
+      }
+    }
+
+    // D. Tourist-Specific Copilot Operations
+    if (lower.includes('plan my day') || lower.includes('plan a one-day trip') || lower.includes('plan a trip') || lower.includes('plan a 1 day trip')) {
+      const attractions = modeService.getTouristAttractions();
+      const topAttractions = attractions.slice(0, 4);
+      const costIntel = modeService.calculateTouristTripCost(topAttractions, 'CAR', 28);
+      const resp = `I've prepared a curated one-day trip featuring ${topAttractions.length} destinations. Estimated total cost: ₹${costIntel.totalEstimatedCostInr}.`;
+      this.recordAssistantResponse(resp);
+      navigationVoiceService.speak(resp, 4);
+      return {
+        spokenResponse: resp,
+        actionTaken: 'TOURIST_ACTION_EXECUTED',
+        operation: { type: 'TOURIST_NAVIGATION', payload: { attractions: topAttractions, costIntel } },
+        copilotAction: { type: 'GENERATE_ITINERARY', parameters: { stops: topAttractions.length }, confirmationRequired: false },
+        metadata: { itinerary: topAttractions, cost: costIntel },
+      };
+    }
+
+    if (lower.includes('skip this place') || lower.includes('skip this stop') || lower.includes('skip stop') || lower.includes('remove last stop')) {
+      navigationVoiceService.announceTouristStopSkipped();
+      const resp = 'Tourist stop skipped. Recalculating next attraction on your itinerary.';
+      this.recordAssistantResponse(resp);
+      return {
+        spokenResponse: resp,
+        actionTaken: 'TOURIST_ACTION_EXECUTED',
+        operation: { type: 'TOURIST_NAVIGATION', payload: { action: 'SKIP_STOP' } },
+        copilotAction: { type: 'SKIP_ITINERARY_STOP', confirmationRequired: false },
+      };
+    }
+
+    if (lower.includes('what is nearby') || lower.includes('what\'s nearby') || lower.includes('find something nearby')) {
+      const mode = modeService.getActiveMode();
+      let nearbySummary = '';
+      if (mode === 'CAMPUS') {
+        const pois = modeService.getCampusPOIs().slice(0, 3);
+        nearbySummary = `Nearby campus facilities: ${pois.map((p) => p.name).join(', ')}.`;
+      } else if (mode === 'TOURIST') {
+        const attractions = modeService.getTouristAttractions().slice(0, 3);
+        nearbySummary = `Top nearby sights: ${attractions.map((a) => a.name).join(', ')}.`;
+      } else {
+        nearbySummary = 'You have hospital, fuel, and transit hubs located along your active corridor.';
+      }
+
+      this.recordAssistantResponse(nearbySummary);
+      navigationVoiceService.speak(nearbySummary, 4);
+      return {
+        spokenResponse: nearbySummary,
+        actionTaken: 'INFO_PROVIDED',
+        operation: { type: 'INFO_PROVIDED', payload: { mode } },
+      };
+    }
+
     // Default conversational help
-    const fallback = `I can help you plan trips under budget, calculate fuel and toll costs, check buses/metros, optimize deliveries, or navigate safely. What would you like to plan?`;
+    const fallback = `I can help you plan trips under budget, calculate fuel and toll costs, check buses/metros, optimize deliveries, or navigate in Accessibility, Campus, or Tourist mode. What would you like to do?`;
     this.recordAssistantResponse(fallback);
     return { spokenResponse: fallback, actionTaken: 'INFO_PROVIDED', operation: { type: 'INFO_PROVIDED' } };
   }
