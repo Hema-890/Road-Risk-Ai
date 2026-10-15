@@ -210,7 +210,8 @@ export type TouristTravelerType =
   | 'religious'
   | 'culture'
   | 'budget'
-  | 'sightseeing';
+  | 'sightseeing'
+  | 'heritage';
 
 export interface TouristPreferences {
   travelerType: TouristTravelerType;
